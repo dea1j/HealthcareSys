@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PatientService.Domain.Entities;
 using PatientService.Domain.Repositories;
+using PatientService.Domain.ValueObjects;
 using PatientService.Infrastructure.Persistence;
 
 namespace PatientService.Infrastructure.Repositories;
@@ -13,22 +14,31 @@ public class PatientRepository : IPatientRepository
     {
         _context = context;
     }
-    
-    public async Task<Patient> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+
+    public async Task<Patient?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Patients
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
     public async Task<Patient?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
-        return await _context.Patients
-            .FirstOrDefaultAsync(p => p.Email.Value == email.ToLowerInvariant(), cancellationToken);
+        var normalizedEmail = email.ToLowerInvariant();
+        
+        // Use AsNoTracking and load immediately
+        var patients = await _context.Patients
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+        
+        // Filter in memory to avoid value object translation issues
+        return patients.FirstOrDefault(p => p.Email.Value == normalizedEmail);
     }
 
     public async Task<IEnumerable<Patient>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Patients
+            .AsNoTracking()
             .OrderBy(p => p.LastName)
             .ThenBy(p => p.FirstName)
             .ToListAsync(cancellationToken);
@@ -38,7 +48,7 @@ public class PatientRepository : IPatientRepository
     {
         await _context.Patients.AddAsync(patient, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
-        return patient; 
+        return patient;
     }
 
     public async Task UpdateAsync(Patient patient, CancellationToken cancellationToken = default)
@@ -49,7 +59,9 @@ public class PatientRepository : IPatientRepository
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var patient = await GetByIdAsync(id, cancellationToken);
+        var patient = await _context.Patients
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+            
         if (patient is not null)
         {
             _context.Patients.Remove(patient);

@@ -73,14 +73,6 @@ public class PatientsController : ControllerBase
                 new { id = patientId },
                 new { id = patientId });
         }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(ex.Message);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating patient");

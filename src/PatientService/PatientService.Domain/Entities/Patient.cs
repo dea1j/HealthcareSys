@@ -32,6 +32,11 @@ public class Patient
         
         if (string.IsNullOrWhiteSpace(lastName))
             throw new ArgumentException("Last name is required", nameof(lastName));
+        
+        // Ensure DateOfBirth is in UTC
+        var utcDateOfBirth = dateOfBirth.Kind == DateTimeKind.Utc 
+            ? dateOfBirth 
+            : DateTime.SpecifyKind(dateOfBirth.Date, DateTimeKind.Utc);
 
         return new Patient
         {
@@ -40,7 +45,7 @@ public class Patient
             LastName = lastName,
             Email = email,
             PhoneNumber = phoneNumber,
-            DateOfBirth = dateOfBirth,
+            DateOfBirth = utcDateOfBirth,
             Address = address,
             CreatedAt = DateTime.UtcNow
         };
