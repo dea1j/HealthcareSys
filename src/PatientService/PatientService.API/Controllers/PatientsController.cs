@@ -99,14 +99,6 @@ public class PatientsController : ControllerBase
             await _mediator.Send(command, cancellationToken);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating patient {PatientId}", id);
@@ -119,8 +111,8 @@ public class PatientsController : ControllerBase
     {
         try
         {
-            // You'll need to create a DeletePatientCommand
-            // For now, just return NotImplemented
+            // Create a DeletePatientCommand
+            // For now return NotImplemented
             return StatusCode(501, "Delete operation not yet implemented");
         }
         catch (Exception ex)
