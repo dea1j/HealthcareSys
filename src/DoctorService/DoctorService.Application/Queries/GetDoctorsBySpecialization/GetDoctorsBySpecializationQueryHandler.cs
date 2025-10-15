@@ -1,7 +1,7 @@
-using DoctorService.Application.DTOs;
-using DoctorService.Domain.Repositories;
 using Mapster;
 using MediatR;
+using DoctorService.Application.DTOs;
+using DoctorService.Domain.Repositories;
 
 namespace DoctorService.Application.Queries.GetDoctorsBySpecialization;
 
